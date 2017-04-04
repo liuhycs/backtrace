@@ -164,7 +164,7 @@ fnbounds_map_executable();
 fnbounds_init()
 {
   if (hpcrun_get_disabled()) return 0;
-
+  
   hpcrun_syserv_init();
   fnbounds_map_executable();
   fnbounds_map_open_dsos();
@@ -276,6 +276,7 @@ fnbounds_dso_exec(void)
 
   TMSG(MAP_EXEC, "Entry");
   realpath("/proc/self/exe", filename);
+  
   void** nm_table = (void**) hpcrun_syserv_query(filename, &fh);
   if (! nm_table) {
     EMSG("No nm_table for executable %s", filename);
@@ -503,7 +504,6 @@ fnbounds_get_loadModule(void *ip)
 
   return lm;
 }
-
 
   static void
 fnbounds_map_executable()

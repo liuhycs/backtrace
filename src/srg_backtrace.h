@@ -39,3 +39,7 @@ typedef struct thread_data_t {
 
 } thread_data_t;
 
+void thread_data_init(thread_data_t* td); 
+frame_t* hpcrun_expand_btbuf(thread_data_t* td);
+void hpcrun_ensure_btbuf_avail(thread_data_t* td);
+void backtrace_init();
