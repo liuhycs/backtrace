@@ -48,7 +48,7 @@
 #include "x86-decoder.h"
 #include "x86-interval-arg.h"
 
-#include <lib/isa-lean/x86/instruction-set.h>
+#include <isa-x86-instruction-set.h>
 
 
 unwind_interval *

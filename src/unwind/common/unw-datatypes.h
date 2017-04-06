@@ -48,6 +48,6 @@
 #define UNWIND_DATATYPE_H
 
 // selected by -I to accommodate different data types for different unwinders
-#include "unw-datatypes-specific.h"
+#include "unwind/x86-family/unw-datatypes-specific.h"
 
 #endif // UNWIND_DATATYPE_H

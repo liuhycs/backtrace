@@ -45,9 +45,10 @@
 // ******************************************************* EndRiceCopyright *
 
 #include <sys/time.h>
+#include <string.h>
 #include "loadmap.h"
-#include "fnbounds_interface.h"
-#include "fnbounds_file_header.h"
+#include "fnbounds/fnbounds_interface.h"
+#include "fnbounds/fnbounds_file_header.h"
 
 #include <messages/messages.h>
 

@@ -48,6 +48,7 @@
 #define LOADMAP_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 /* an "loadmap" is an interval of time during which no two dynamic 
    libraries are mapped to the same region of the address space. 
@@ -59,8 +60,8 @@
 
 // Local includes
 
-#include "fnbounds_file_header.h"
-
+#include "fnbounds/fnbounds_file_header.h"
+#include <memory/hpcrun-malloc.h>
 
 //***************************************************************************
 //

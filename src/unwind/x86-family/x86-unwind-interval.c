@@ -74,7 +74,7 @@ void
 suspicious_interval(void *pc) 
 {
   TMSG(SUSPICIOUS_INTERVAL,"suspicious interval for pc = %p", pc);
-  hpcrun_stats_num_unwind_intervals_suspicious_inc();
+  //hpcrun_stats_num_unwind_intervals_suspicious_inc();
 }
 
 unwind_interval*

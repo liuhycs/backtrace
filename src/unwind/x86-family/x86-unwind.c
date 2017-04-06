@@ -64,24 +64,14 @@
 
 #define USE_LIBUNWIND 0
 
-
-//***************************************************************************
-// libmonitor includes
-//***************************************************************************
-
-#include <monitor.h>
-
-
 //***************************************************************************
 // local include files 
 //***************************************************************************
 
 #include <include/gcc-attr.h>
-#include <x86-decoder.h>
+#include "x86-decoder.h"
 
-#include <hpcrun/epoch.h>
-#include "stack_troll.h"
-#include "thread_use.h"
+#include <unwind/common/stack_troll.h>
 
 #include <unwind/common/unwind.h>
 #include <unwind/common/backtrace.h>
@@ -89,11 +79,11 @@
 #include <unwind/common/validate_return_addr.h>
 #include <unwind/common/fence_enum.h>
 #include <fnbounds/fnbounds_interface.h>
-#include "uw_recipe_map.h"
-#include <utilities/arch/mcontext.h>
-#include <utilities/ip-normalized.h>
+#include "unwind/common/uw_recipe_map.h"
+#include "mcontext.h"
+#include "ip-normalized.h"
 
-#include <hpcrun/thread_data.h>
+#include "srg_backtrace.h"
 #include "x86-unwind-interval.h"
 #include "x86-validate-retn-addr.h"
 
@@ -103,7 +93,6 @@
 
 #include <messages/messages.h>
 #include <messages/debug-flag.h>
-#include "main.h"
 
 
 //****************************************************************************
@@ -454,6 +443,8 @@ hpcrun_unw_step(hpcrun_unw_cursor_t *cursor)
   
   hpcrun_unw_cursor_t saved = *cursor;
   step_state rv = hpcrun_unw_step_real(cursor);
+  
+  /*
   if ( ENABLED(UNW_VALID) ) {
     if (rv == STEP_OK) {
       // try to validate all calls, except the one at the base of the call stack from libmonitor.
@@ -465,6 +456,8 @@ hpcrun_unw_step(hpcrun_unw_cursor_t *cursor)
       }
     }
   }
+  */
+
   return rv;
 }
 
@@ -766,6 +759,7 @@ help_simulate_segv(bool no_backtrace)
   if (no_backtrace) {
     return;
   }
+  /* 
   if (hpcrun_below_pmsg_threshold()) {
     hpcrun_bt_dump(TD_GET(btbuf_cur), "DROP");
   }
@@ -774,6 +768,7 @@ help_simulate_segv(bool no_backtrace)
 
   sigjmp_buf_t *it = &(TD_GET(bad_unwind));
   (*hpcrun_get_real_siglongjmp())(it->jb, 9);
+  */
 }
 
 

@@ -54,7 +54,7 @@
 
 #include <assert.h>
 
-#include <lib/isa-lean/x86/instruction-set.h>
+#include <isa-x86-instruction-set.h>
 
 /******************************************************************************
  * interface operations 

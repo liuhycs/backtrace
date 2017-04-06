@@ -1,6 +1,12 @@
 
 #include "srg_backtrace.h"
+#include <setjmp.h>
 
+enum _local_int_const {
+  BACKTRACE_INIT_SZ     = 32,
+  NEW_BACKTRACE_INIT_SZ = 32,
+  CACHED_BACKTRACE_SIZE = 32
+};
 
 void thread_data_init(thread_data_t* td) {
   // ----------------------------------------
@@ -23,7 +29,6 @@ void thread_data_init(thread_data_t* td) {
   td->cached_bt_end     = td->cached_bt;          
   td->cached_bt_buf_end = td->cached_bt + CACHED_BACKTRACE_SIZE;
   td->tramp_frame       = NULL;
-  td->tramp_cct_node    = NULL;
 
 }
 
@@ -43,8 +48,7 @@ void backtrace_init(){
 
 }
 
-void hpcrun_cached_bt_adjust_size(size_t n) {
-  thread_data_t *td = hpcrun_get_thread_data();
+void hpcrun_cached_bt_adjust_size(thread_data_t *td, size_t n) {
   if ((td->cached_bt_buf_end - td->cached_bt) >= n) {
     return; // cached backtrace buffer is already big enough
   }
@@ -64,16 +68,11 @@ frame_t* hpcrun_expand_btbuf(thread_data_t* td) {
   size_t sz = td->btbuf_end - td->btbuf_beg;
   size_t newsz = sz*2;
   /* how big is the current backtrace? */
-  size_t btsz = td->btbuf_end - td->btbuf_sav;
+  size_t btsz = sz;
   /* how big is the backtrace we're recording? */
   size_t recsz = unwind - td->btbuf_beg;
   /* get new buffer */
   frame_t *newbt = hpcrun_malloc(newsz*sizeof(frame_t));
-
-  if(td->btbuf_sav > td->btbuf_end) {
-    EMSG("Invariant btbuf_sav > btbuf_end violated");
-    abort();
-  }
 
   /* copy frames from old to new */
   memcpy(newbt, td->btbuf_beg, recsz*sizeof(frame_t));
@@ -82,7 +81,6 @@ frame_t* hpcrun_expand_btbuf(thread_data_t* td) {
   /* setup new pointers */
   td->btbuf_beg = newbt;
   td->btbuf_end = newbt+newsz;
-  td->btbuf_sav = newbt+newsz-btsz;
 
   /* return new unwind pointer */
   return newbt+recsz;
@@ -91,8 +89,10 @@ frame_t* hpcrun_expand_btbuf(thread_data_t* td) {
 void hpcrun_ensure_btbuf_avail(thread_data_t* td) {
   if (td->btbuf_cur == td->btbuf_end) {
     td->btbuf_cur = hpcrun_expand_btbuf(td);
-    td->btbuf_sav = td->btbuf_end;
   }
 }
 
+siglongjmp_fcn *hpcrun_get_real_siglongjmp(void){
+  return &siglongjmp;
+}
 

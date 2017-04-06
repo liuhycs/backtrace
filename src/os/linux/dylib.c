@@ -52,7 +52,7 @@
 #include <string.h>
 #include <limits.h>
 
-//#define GNU_SOURCE
+//#define __USE_GNU
 #include <link.h>  // dl_iterate_phdr
 #include <dlfcn.h> // dladdr
 
@@ -62,7 +62,7 @@
 //*****************************************************************************
 
 #include "dylib.h"
-#include "fnbounds_interface.h"
+#include "fnbounds/fnbounds_interface.h"
 
 #include <messages/messages.h>
 

@@ -78,7 +78,7 @@
 #include <unistd.h>    // getpid
 
 
-#include <include/hpctoolkit-config.h>
+#include <config.h>
 
 //*********************************************************************
 // local includes
@@ -86,11 +86,11 @@
 
 #include "fnbounds_interface.h"
 #include "fnbounds_file_header.h"
-#include "dylib.h"
+#include "os/linux/dylib.h"
 
 #include <disabled.h>
 #include <loadmap.h>
-#include <thread_data.h>
+#include <srg_backtrace.h>
 
 #include <unwind/common/uw_recipe_map.h>
 #include <messages/messages.h>
@@ -120,12 +120,10 @@ static spinlock_t fnbounds_lock = SPINLOCK_UNLOCKED;
 
 #define FNBOUNDS_LOCK  do {			\
   spinlock_lock(&fnbounds_lock);		\
-  TD_GET(fnbounds_lock) = 1;		\
 } while (0)
 
 #define FNBOUNDS_UNLOCK  do {			\
   spinlock_unlock(&fnbounds_lock);	\
-  TD_GET(fnbounds_lock) = 0;		\
 } while (0)
 
 

@@ -77,6 +77,11 @@
 #endif
 #endif
 
+#ifndef REG_INST_PTR
+#define REG_INST_PTR REG_RIP
+#define REG_BASE_PTR REG_RBP
+#define REG_STACK_PTR REG_RSP
+#endif
 
 #define MCONTEXT_REG(mctxt, reg) (mctxt->gregs[reg])
 

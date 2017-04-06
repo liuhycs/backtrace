@@ -64,9 +64,10 @@
 //***************************************************************************
 
 #include <unwind/common/unw-throw.h>
-
+#include <unwind/common/unwind.h>
 #include <trampoline/common/trampoline.h>
-#include <dbg_backtrace.h>
+#include "dbg_backtrace.h"
+#include "messages/debug-flag.h"
 
 //***************************************************************************
 // local constants & macros
@@ -96,10 +97,12 @@ hpcrun_bt_init(backtrace_t* bt, size_t size)
   void
 hpcrun_dump_bt(backtrace_t* bt)
 {
+  /* 
   for(frame_t* _f = bt->beg; _f < bt->beg + bt->len; _f++) {
     TMSG(BT, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %p ", _f->ip_norm.lm_id,
         _f->ip_norm.lm_ip);
   }
+  */
 }
 
 //
@@ -113,10 +116,11 @@ hpcrun_dump_bt(backtrace_t* bt)
 //
   bool
 hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
-    ucontext_t* context,
-    int skipInner)
+    ucontext_t* context
+//    int skipInner
+    )
 {
-  TMSG(BT, "Generate backtrace (no tramp), skip inner = %d", skipInner);
+  //TMSG(BT, "Generate backtrace (no tramp), skip inner = %d", skipInner);
   bt->has_tramp = false;
   bt->trolled  = false;
   bt->n_trolls = 0;
@@ -136,7 +140,7 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
   //--------------------------------------------------------------------
 
   td->btbuf_cur   = td->btbuf_beg; // innermost
-  td->btbuf_sav   = td->btbuf_end;
+  //td->btbuf_sav   = td->btbuf_end;
 
   hpcrun_unw_cursor_t cursor;
   hpcrun_unw_init_cursor(&cursor, context);
@@ -152,7 +156,7 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
       // drop the sample. 
       // FIXME: sharpen the information to indicate why the sample is 
       //        being dropped.
-      hpcrun_unw_drop();
+      hpcrun_unw_drop(td);
     }
 
     if (hpcrun_trampoline_at_entry((void*) ip)) {
@@ -161,12 +165,12 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
         // record a return. for now, simply do nothing ...
         // FIXME: with a bit more effort, we could charge 
         //        the sample to the return address in the caller. 
-        hpcrun_unw_drop();
+        hpcrun_unw_drop(td);
       }
       else {
         // we have encountered a trampoline in the middle of an unwind.
         bt->has_tramp = (tramp_found = true);
-        TMSG(TRAMP, "--CURRENT UNWIND FINDS TRAMPOLINE @ (sp:%p, bp:%p", cursor.sp, cursor.bp);
+        //TMSG(TRAMP, "--CURRENT UNWIND FINDS TRAMPOLINE @ (sp:%p, bp:%p", cursor.sp, cursor.bp);
         // no need to unwind further. the outer frames are already known.
 
         bt->fence = FENCE_TRAMP;
@@ -196,7 +200,7 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
     }
     if (ret <= 0) {
       if (ret == STEP_ERROR) {
-        hpcrun_stats_num_samples_dropped_inc();
+        //hpcrun_stats_num_samples_dropped_inc();
       }
       else { // STEP_STOP
         bt->fence = cursor.fence;
@@ -206,25 +210,27 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
     prev->ra_loc = hpcrun_unw_get_ra_loc(&cursor);
   }
 
-  TMSG(FENCE, "backtrace generation detects fence = %s", fence_enum_name(bt->fence));
+  //TMSG(FENCE, "backtrace generation detects fence = %s", fence_enum_name(bt->fence));
 
   frame_t* bt_beg  = td->btbuf_beg;      // innermost, inclusive
   frame_t* bt_last = td->btbuf_cur - 1; // outermost, inclusive
 
+  /*
   if (skipInner) {
     if (ENABLED(USE_TRAMP)){
       //
       // FIXME: For the moment, ignore skipInner issues with trampolines.
       //        Eventually, this will need to be addressed
       //
-      TMSG(TRAMP, "WARNING: backtrace detects skipInner != 0 (skipInner = %d)", 
-          skipInner);
+      //TMSG(TRAMP, "WARNING: backtrace detects skipInner != 0 (skipInner = %d)", 
+      //    skipInner);
     }
-    TMSG(BT, "* BEFORE Skip inner correction, bt_beg = %p", bt_beg);
+    //TMSG(BT, "* BEFORE Skip inner correction, bt_beg = %p", bt_beg);
     // adjust the returned backtrace according to the skipInner
     bt_beg = hpcrun_skip_chords(bt_last, bt_beg, skipInner);
-    TMSG(BT, "* AFTER Skip inner correction, bt_beg = %p", bt_beg);
+    //TMSG(BT, "* AFTER Skip inner correction, bt_beg = %p", bt_beg);
   }
+  */
 
   bt->begin = bt_beg;         // returned backtrace begin
   // is buffer beginning
@@ -232,11 +238,11 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
   // last recorded element
   // soft error mandates returning false
   if (! (ret == STEP_STOP)) {
-    TMSG(BT, "** Soft Failure **");
+    //TMSG(BT, "** Soft Failure **");
     return false;
   }
 
-  TMSG(BT, "succeeds");
+  //TMSG(BT, "succeeds");
   bt->partial_unwind = false;
   return true;
 }
@@ -247,11 +253,10 @@ hpcrun_generate_backtrace_no_trampoline(thread_data_t* td, backtrace_info_t* bt,
 //
   bool
 hpcrun_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
-    ucontext_t* context, int skipInner)
+    ucontext_t* context)
 {
-  bool ret = hpcrun_generate_backtrace_no_trampoline(bt,
-      context,
-      skipInner);
+  bool ret = hpcrun_generate_backtrace_no_trampoline(td, bt,
+      context);
   if (! ret ) return false;
 
   bool tramp_found = bt->has_tramp;
@@ -263,23 +268,23 @@ hpcrun_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
 
   if (ENABLED(USE_TRAMP)) {
     if (tramp_found) {
-      TMSG(BACKTRACE, "tramp stop: conjoining backtraces");
-      TMSG(TRAMP, " FOUND TRAMP: constructing cached backtrace");
+      //TMSG(BACKTRACE, "tramp stop: conjoining backtraces");
+      //TMSG(TRAMP, " FOUND TRAMP: constructing cached backtrace");
       //
       // join current backtrace fragment to previous trampoline-marked prefix
       // and make this new conjoined backtrace the cached-backtrace
       //
       frame_t* prefix = td->tramp_frame;
-      TMSG(TRAMP, "Check: tramp prefix ra_loc = %p, addr@ra_loc = %p (?= %p tramp), retn_addr = %p",
-          prefix->ra_loc, *((void**) prefix->ra_loc), hpcrun_trampoline, td->tramp_retn_addr);
+      //TMSG(TRAMP, "Check: tramp prefix ra_loc = %p, addr@ra_loc = %p (?= %p tramp), retn_addr = %p",
+      //    prefix->ra_loc, *((void**) prefix->ra_loc), hpcrun_trampoline, td->tramp_retn_addr);
       size_t old_frame_count = td->cached_bt_end - prefix;
-      TMSG(TRAMP, "Check: Old frame count = %d ?= %d (computed frame count)",
-          old_frame_count, td->cached_frame_count);
+     /// TMSG(TRAMP, "Check: Old frame count = %d ?= %d (computed frame count)",
+      //    old_frame_count, td->cached_frame_count);
 
       size_t n_cached_frames = new_frame_count - 1;
-      hpcrun_cached_bt_adjust_size(n_cached_frames + old_frame_count);
-      TMSG(TRAMP, "cached trace size = (new frames) %d + (old frames) %d = %d",
-          n_cached_frames, old_frame_count, n_cached_frames + old_frame_count);
+      hpcrun_cached_bt_adjust_size(td, n_cached_frames + old_frame_count);
+      //TMSG(TRAMP, "cached trace size = (new frames) %d + (old frames) %d = %d",
+       //   n_cached_frames, old_frame_count, n_cached_frames + old_frame_count);
       // put the old prefix in place
       memmove(td->cached_bt + n_cached_frames, prefix,
           sizeof(frame_t) * old_frame_count);
@@ -292,21 +297,21 @@ hpcrun_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
       // maintain invariants
       td->cached_frame_count = n_cached_frames + old_frame_count;
       td->tramp_frame = td->cached_bt + n_cached_frames;
-      TMSG(TRAMP, "Check: tramp prefix ra_loc = %p, addr@ra_loc = %p (?= %p tramp), retn_addr = %p",
-          prefix->ra_loc, *((void**) prefix->ra_loc), hpcrun_trampoline, td->tramp_retn_addr);
+      //TMSG(TRAMP, "Check: tramp prefix ra_loc = %p, addr@ra_loc = %p (?= %p tramp), retn_addr = %p",
+      //    prefix->ra_loc, *((void**) prefix->ra_loc), hpcrun_trampoline, td->tramp_retn_addr);
     }
     else {
-      TMSG(TRAMP, "No tramp found: cached backtrace size = %d", new_frame_count);
-      hpcrun_cached_bt_adjust_size(new_frame_count);
+      //TMSG(TRAMP, "No tramp found: cached backtrace size = %d", new_frame_count);
+      hpcrun_cached_bt_adjust_size(td, new_frame_count);
       size_t n_cached_frames = new_frame_count - 1;
-      TMSG(TRAMP, "Confirm: ra_loc(last bt frame) = %p", (bt_beg + n_cached_frames)->ra_loc);
+      //TMSG(TRAMP, "Confirm: ra_loc(last bt frame) = %p", (bt_beg + n_cached_frames)->ra_loc);
       memmove(td->cached_bt, bt_beg, sizeof(frame_t) * n_cached_frames);
 
       td->cached_bt_end = td->cached_bt + n_cached_frames;
       td->cached_frame_count = n_cached_frames;
     }
     if (ENABLED(TRAMP)) {
-      TMSG(TRAMP, "Dump cached backtrace from backtrace construction");
+      //TMSG(TRAMP, "Dump cached backtrace from backtrace construction");
     }
   }
 
@@ -347,7 +352,7 @@ hpcrun_dbg_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
   //--------------------------------------------------------------------
 
   td->btbuf_cur   = td->btbuf_beg; // innermost
-  td->btbuf_sav   = td->btbuf_end;
+  //td->btbuf_sav   = td->btbuf_end;
 
   int unw_len = 0;
   while (true) {
@@ -419,7 +424,7 @@ hpcrun_dbg_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
   }
 
   if (tramp_found) {
-    TMSG(BACKTRACE, "tramp stop: conjoining backtraces");
+    //TMSG(BACKTRACE, "tramp stop: conjoining backtraces");
     //
     // join current backtrace fragment to previous trampoline-marked prefix
     // and make this new conjoined backtrace the cached-backtrace
@@ -427,7 +432,7 @@ hpcrun_dbg_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
     frame_t* prefix = td->tramp_frame + 1; // skip top frame
     size_t old_frame_count = td->cached_bt_end - prefix;
 
-    hpcrun_cached_bt_adjust_size(new_frame_count + old_frame_count);
+    hpcrun_cached_bt_adjust_size(td, new_frame_count + old_frame_count);
 
     // put the old prefix in place
     memmove(td->cached_bt + new_frame_count, prefix, 
@@ -440,24 +445,26 @@ hpcrun_dbg_generate_backtrace(thread_data_t* td, backtrace_info_t* bt,
     td->cached_bt_end = td->cached_bt + new_frame_count + old_frame_count;
   }
   else {
-    hpcrun_cached_bt_adjust_size(new_frame_count);
+    hpcrun_cached_bt_adjust_size(td, new_frame_count);
     memmove(td->cached_bt, bt_beg, sizeof(frame_t) * new_frame_count);
 
     td->cached_bt_end = td->cached_bt + new_frame_count;
   }
 
+  /*
   if (skipInner) {
     if (ENABLED(USE_TRAMP)){
       //
       // FIXME: For the moment, ignore skipInner issues with trampolines.
       //        Eventually, this will need to be addressed
       //
-      EMSG("WARNING: backtrace detects skipInner != 0 (skipInner = %d)", 
-          skipInner);
+      //EMSG("WARNING: backtrace detects skipInner != 0 (skipInner = %d)", 
+      //    skipInner);
     }
     // adjust the returned backtrace according to the skipInner
     bt->begin = hpcrun_skip_chords(bt_last, bt_beg, skipInner);
   }
+  */
 
   bt->partial_unwind = false;
   return true;

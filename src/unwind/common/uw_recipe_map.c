@@ -423,12 +423,14 @@ uw_recipe_map_notify_init()
 /*
  * clean-up the state in case of emergency such as SEGV
  */
+/* 
   static void
 uw_cleanup(void)
 {
   ildmod_stat_t *ilmstat = current_btuwi->ilmstat;
-  atomic_store_explicit(&ilmstat->stat, NEVER, memory_order_release);
+  atomic_store_explicit(&(ilmstat->stat), NEVER, memory_order_release);
 }
+*/
 
 //---------------------------------------------------------------------
 // interface operations

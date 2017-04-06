@@ -12,7 +12,7 @@
 #ifndef __UW_RECIPE_H__
 #define __UW_RECIPE_H__
 
-#include <utils/mem_manager.h>
+#include <memory/mem_manager.h>
 
 //******************************************************************************
 // macro

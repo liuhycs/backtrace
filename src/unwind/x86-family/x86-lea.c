@@ -49,7 +49,7 @@
 #include "x86-lea.h"
 #include "x86-interval-arg.h"
 
-#include <lib/isa-lean/x86/instruction-set.h>
+#include <isa-x86-instruction-set.h>
 
 unwind_interval *
 process_lea(xed_decoded_inst_t *xptr, const xed_inst_t *xi, interval_arg_t *iarg,
@@ -60,7 +60,7 @@ process_lea(xed_decoded_inst_t *xptr, const xed_inst_t *xi, interval_arg_t *iarg
   const xed_operand_t *op0 =  xed_inst_operand(xi, 0);
   xed_operand_enum_t   op0_name = xed_operand_name(op0);
 
-  if ((op0_name == XED_OPERAND_REG0)) { 
+  if (op0_name == XED_OPERAND_REG0) { 
     x86recipe_t *xr = UWI_RECIPE(next);
     xed_reg_enum_t regname = xed_decoded_inst_get_reg(xptr, op0_name);
     char *next_ins = iarg->ins + xed_decoded_inst_get_length(xptr);

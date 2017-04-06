@@ -21,7 +21,7 @@
 // local include files
 //******************************************************************************
 
-#include <utils/mem_manager.h>
+#include <memory/mem_manager.h>
 #include "interval_t.h"
 #include "uw_recipe.h"
 

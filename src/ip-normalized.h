@@ -51,6 +51,7 @@
 
 //*************************** User Include Files ****************************
 
+#include <stdbool.h>
 #include <loadmap.h>
 
 //*************************** Forward Declarations **************************
@@ -61,6 +62,9 @@
 // ip_normalized_t: A normalized instruction pointer. Since this is a
 //   small struct, it can be passed by value.
 // ---------------------------------------------------------
+
+#define HPCRUN_FMT_LMId_NULL (0)
+#define HPCRUN_FMT_LMIp_NULL (0)
 
 typedef struct ip_normalized_t {
   

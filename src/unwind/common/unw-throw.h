@@ -47,6 +47,8 @@
 #ifndef UNW_THROW_H
 #define UNW_THROW_H
 
+#include <srg_backtrace.h>
+
 extern void hpcrun_unw_throw(void);
 extern void hpcrun_unw_drop(thread_data_t* td);
 

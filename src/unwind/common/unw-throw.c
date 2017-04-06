@@ -65,7 +65,7 @@
 //*************************************************************************
 #include <messages/messages.h>
 #include <unwind/common/backtrace.h>
-#include <thread_data.h>
+#include <srg_backtrace.h>
 
 #include "unw-throw.h"
 
@@ -87,8 +87,8 @@ hpcrun_unw_drop(thread_data_t* td)
 {
   td->btbuf_cur = td->btbuf_beg; // flush any collected backtrace frames
 
-  sigjmp_buf_t *it = &(td->bad_unwind);
-  (*hpcrun_get_real_siglongjmp())(it->jb, 9);
+  //sigjmp_buf_t *it = &(td->bad_unwind);
+  //(*hpcrun_get_real_siglongjmp())(it->jb, 9);
 }
 
 void
@@ -96,6 +96,7 @@ hpcrun_unw_throw(void)
 {
   if (DEBUG_NO_LONGJMP) return;
 
+  /* 
   if (hpcrun_below_pmsg_threshold()) {
     hpcrun_bt_dump(TD_GET(btbuf_cur), "PARTIAL");
   }
@@ -104,4 +105,5 @@ hpcrun_unw_throw(void)
 
   sigjmp_buf_t *it = &(TD_GET(bad_unwind));
   (*hpcrun_get_real_siglongjmp())(it->jb, 9);
+  */
 }

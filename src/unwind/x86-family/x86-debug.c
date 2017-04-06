@@ -51,14 +51,14 @@
 
 //*************************** configuration ****************************
 
-#include <include/hpctoolkit-config.h>
+#include <config.h>
 
 //*************************** User Include Files ****************************
 
 #include "x86-unwind-analysis.h"
 #include "x86-build-intervals.h"
 #include "x86-decoder.h"
-#include "fnbounds_interface.h"
+#include <fnbounds/fnbounds_interface.h>
 
 typedef struct {
   void* begin;

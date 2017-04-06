@@ -47,7 +47,7 @@
 #ifndef unwind_interval_h
 #define unwind_interval_h
 
-#include <utils/mem_manager.h>
+#include <memory/mem_manager.h>
 #include "binarytree_uwi.h"
 
 //***************************************************************************

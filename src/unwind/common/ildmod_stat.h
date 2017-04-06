@@ -14,10 +14,11 @@
 // local include files
 //******************************************************************************
 
-#include <lib/prof-lean/generic_pair.h>
-#include <lib/prof-lean/mem_manager.h>
-#include <hpcrun/loadmap.h>
+#include <utils/generic_pair.h>
+#include <memory/mem_manager.h>
+#include "loadmap.h"
 #include "interval_t.h"
+#include <utils/stdatomic.h>
 
 
 //******************************************************************************
