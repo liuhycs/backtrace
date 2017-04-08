@@ -563,8 +563,7 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   fh->is_relocatable = fnb_info.is_relocatable;
   fh->mmap_size = mmap_size;
 
-  fprintf(stderr, "addr: %p, [%s]\n
-      symbols: %ld, offset: 0x%lx, reloc: %d\n",
+  fprintf(stderr, "addr: %p, [%s]\nsymbols: %ld, offset: 0x%lx, reloc: %d\n",
        addr, (char*)addr, (long) fh->num_entries, (long) fh->reference_offset,
        (int) fh->is_relocatable);
   TMSG(SYSTEM_SERVER, "addr: %p, symbols: %ld, offset: 0x%lx, reloc: %d",
