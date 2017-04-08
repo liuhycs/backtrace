@@ -59,6 +59,7 @@
 #include "x86-build-intervals.h"
 #include "x86-decoder.h"
 #include <fnbounds/fnbounds_interface.h>
+#include <unwind/common/unwindr_info.h>
 
 typedef struct {
   void* begin;
@@ -71,8 +72,9 @@ fnbounds_t*
 x86_fnbounds(void* addr)
 {
   unwindr_info_t unwr_info;
-  if( !uw_recipe_map_lookup(addr, &unwr_info) )
-	  EMSG("x86_fnbounds: bounds of addr %p taken, but no bounds known", addr);
+  uw_recipe_map_lookup(addr, &unwr_info);
+  //if( !uw_recipe_map_lookup(addr, &unwr_info) )
+	//  EMSG("x86_fnbounds: bounds of addr %p taken, but no bounds known", addr);
   local.begin = (void*)unwr_info.start;
   local.end   = (void*)unwr_info.end;
   return &local;
@@ -92,8 +94,9 @@ void
 x86_dump_intervals(void* addr)
 {
   unwindr_info_t unwr_info;
-  if( !uw_recipe_map_lookup(addr, &unwr_info) )
-	  EMSG("x86_fnbounds: bounds of addr %p taken, but no bounds known", addr);
+  uw_recipe_map_lookup(addr, &unwr_info);
+  //if( !uw_recipe_map_lookup(addr, &unwr_info) )
+	//  EMSG("x86_fnbounds: bounds of addr %p taken, but no bounds known", addr);
   void * s = (void*)unwr_info.start;
   void * e = (void*)unwr_info.end;
 
@@ -141,8 +144,8 @@ x86_dump_ins(void *ins)
       sprintf(errbuf, "x86_dump_ins: xed decode error addr=%p, code = %d\n", 
 	      ins, (int) xed_error);
   }
-  EMSG(errbuf);
-  fprintf(stderr, errbuf);
+  //EMSG(errbuf);
+  //fprintf(stderr, errbuf);
   fflush(stderr);
 }
 
@@ -150,8 +153,9 @@ void
 hpcrun_dump_intervals_noisy(void* addr)
 {
   unwindr_info_t unwr_info;
-  if (!uw_recipe_map_lookup(addr, &unwr_info))
-	  EMSG("hpcrun_dump_intervals_noisy: bounds of addr %p taken, but no bounds known", addr);
+  uw_recipe_map_lookup(addr, &unwr_info);
+  //if (!uw_recipe_map_lookup(addr, &unwr_info))
+	//  EMSG("hpcrun_dump_intervals_noisy: bounds of addr %p taken, but no bounds known", addr);
   void * s = (void*)unwr_info.start;
   void * e = (void*)unwr_info.end;
 

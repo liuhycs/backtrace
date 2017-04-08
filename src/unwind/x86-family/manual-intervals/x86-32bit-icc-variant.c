@@ -2,8 +2,8 @@
 
 // * BeginRiceCopyright *****************************************************
 //
-// $HeadURL$
-// $Id$
+// $HeadURL: https://outreach.scidac.gov/svn/hpctoolkit/trunk/src/tool/hpcrun/unwind/x86-family/manual-intervals/x86-32bit-main.c $
+// $Id: x86-32bit-main.c 3328 2010-12-23 23:39:09Z tallent $
 //
 // --------------------------------------------------------------------------
 // Part of HPCToolkit (hpctoolkit.org)
@@ -44,39 +44,62 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
-
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
-
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
-
-#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include "unwind/x86-family/x86-unwind-interval-fixup.h"
+#include "unwind/x86-family/x86-unwind-interval.h"
 
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+static char icc_variant_signature[] = {
+  0x53,      	    	  // push %ebx
+  0x8b, 0xdc, 	    	  // mov  %esp,%ebx
+  0x83,0xe4,0xe0,   	  // and  $0xffffffe0,%esp
+  0x55,	            	  // push %ebp
+  0x55,	            	  // push %ebp
+  0x8b, 0x6b, 0x04, 	  // mov  0x4(%ebx),%ebp
+  0x89, 0x6c, 0x24, 0x04, // mov  %ebp,0x4(%esp)
+  0x8b, 0xec,             // mov  %esp,%ebp
+};
 
-#include <srg_backtrace.h>
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
+static int 
+adjust_icc_variant_intervals(char *ins, int len, btuwi_status_t* stat)
+{
+  int siglen = sizeof(icc_variant_signature);
 
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
+  if (len > siglen && strncmp((char *)icc_variant_signature, ins, siglen) == 0) {
+    // signature matched 
+    unwind_interval* ui = (unwind_interval *) stat->first;
 
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+    // this won't fix all of the intervals, but it will fix the ones 
+    // that we care about.
+    //
+    // The method is as follows:
+    // Ignore (do not correct) intervals before 1st std frame
+    // For 1st STD_FRAME, compute the corrections for this interval and subsequent intervals
+    // For this interval and subsequent interval, apply the corrected offsets
+    //
+
+    for(;  UWI_RECIPE(ui)->ra_status != RA_STD_FRAME; ui = UWI_NEXT(ui));
+
+    int ra_correction =  UWI_RECIPE(ui)->sp_ra_pos - 4; // N.B. The '4' is only correct for 32 bit
+    int bp_correction =  UWI_RECIPE(ui)->sp_bp_pos;
+
+    for(; ui; ui = UWI_NEXT(ui)) {
+      UWI_RECIPE(ui)->bp_ra_pos -= ra_correction;
+      UWI_RECIPE(ui)->bp_bp_pos -= bp_correction;
+      UWI_RECIPE(ui)->sp_ra_pos -= ra_correction;
+      UWI_RECIPE(ui)->sp_bp_pos -= bp_correction;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+
+static void 
+__attribute__ ((constructor))
+register_unwind_interval_fixup_function(void)
+{
+  add_x86_unwind_interval_fixup_function(adjust_icc_variant_intervals);
+}

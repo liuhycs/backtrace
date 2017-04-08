@@ -54,6 +54,7 @@
 #include "x86-decoder.h"
 #include "x86-enter.h"
 #include "x86-leave.h"
+#include "x86-lea.h"
 #include "x86-jump.h"
 #include "x86-move.h"
 #include "x86-push.h"
@@ -61,6 +62,9 @@
 #include "x86-return.h"
 #include "x86-cold-path.h"
 #include "x86-interval-arg.h"
+
+#include "messages/debug-flag.h"
+#include "unwind/common/unwindr_info.h"
 
 #define UWRECIPE_DEBUG 1
 
@@ -78,8 +82,8 @@ process_inst(xed_decoded_inst_t *xptr, interval_arg_t *iarg, mem_alloc m_alloc)
   case XED_ICLASS_JMP_FAR:
 	next = process_unconditional_branch(xptr, irdebug, iarg, m_alloc);
 	if (hpcrun_is_cold_code(xptr, iarg)) {
-	  TMSG(COLD_CODE,"  --cold code routine detected!");
-	  TMSG(COLD_CODE,"fetching interval from location %p",iarg->return_addr);
+	  //TMSG(COLD_CODE,"  --cold code routine detected!");
+	  //TMSG(COLD_CODE,"fetching interval from location %p",iarg->return_addr);
 
 	  unwindr_info_t unwr_info;
 	  bool found = uw_recipe_map_lookup(iarg->return_addr, &unwr_info);
@@ -88,7 +92,7 @@ process_inst(xed_decoded_inst_t *xptr, interval_arg_t *iarg, mem_alloc m_alloc)
 #endif
 	  bitree_uwi_t *ui = unwr_info.btuwi;
 
-	  TMSG(COLD_CODE,"got unwind interval from hpcrun_addr_to_interval");
+	  //TMSG(COLD_CODE,"got unwind interval from hpcrun_addr_to_interval");
 	  if (ENABLED(COLD_CODE)) {
 		dump_ui_stderr(ui);
 	  }

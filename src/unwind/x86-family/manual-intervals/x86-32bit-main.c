@@ -44,39 +44,50 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
-
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
-
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
-
-#include <stdbool.h>
+#include <string.h>
+#include "unwind/x86-family/x86-unwind-interval-fixup.h"
+#include "unwind/x86-family/x86-unwind-interval.h"
 
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+static char main32_signature[] = { 
 
-#include <srg_backtrace.h>
+  0x8d, 0x4c, 0x24, 0x04, // lea    0x4(%esp),%ecx
+  0x83, 0xe4, 0xf0,       // and    $0xfffffff0,%esp
+  0xff, 0x71, 0xfc,       // pushl  -0x4(%ecx)
+};
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
 
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
+static int 
+adjust_32bit_main_intervals(char *ins, int len, btuwi_status_t *stat)
+{
+  int siglen = sizeof(main32_signature);
 
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+  if (len > siglen && strncmp((char *)main32_signature, ins, siglen) == 0) {
+    // signature matched 
+    unwind_interval *ui = stat->first;
+
+    // this won't fix all of the intervals, but it will fix the ones 
+    // that we care about.
+    while(ui) {
+      if (UWI_RECIPE(ui)->ra_status == RA_STD_FRAME){
+    	UWI_RECIPE(ui)->bp_ra_pos = 4;
+    	UWI_RECIPE(ui)->bp_bp_pos = 0;
+    	UWI_RECIPE(ui)->sp_ra_pos = 4;
+    	UWI_RECIPE(ui)->sp_bp_pos = 0;
+      }
+      ui = UWI_NEXT(ui);
+    }
+    return 1;
+  } 
+  return 0;
+}
+
+
+static void 
+__attribute__ ((constructor))
+register_unwind_interval_fixup_function(void)
+{
+  add_x86_unwind_interval_fixup_function(adjust_32bit_main_intervals);
+}
+
+

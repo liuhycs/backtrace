@@ -30,7 +30,7 @@ void a(){
 }
 
 int main() {
-  backtrace_init();
+  backtrace_init((void*)__builtin_frame_address(0));
   a();
   char* ptr = malloc(10);
   *ptr = 'm';

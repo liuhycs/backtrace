@@ -236,7 +236,7 @@ fnbounds_find_exec_bounds_proc_maps(char* exename, void**start, void** end)
   *start = NULL; *end = NULL;
   FILE* loadmap = fopen("/proc/self/maps", "r");
   if (! loadmap) {
-    EMSG("Could not open /proc/self/maps");
+    //EMSG("Could not open /proc/self/maps");
     return;
   }
   char linebuf[1024 + 1];
@@ -276,12 +276,15 @@ fnbounds_dso_exec(void)
   realpath("/proc/self/exe", filename);
   
   void** nm_table = (void**) hpcrun_syserv_query(filename, &fh);
+  fprintf(stderr, "nmtable %p\n", nm_table);
+  fprintf(stderr, "nmtable %p\n", nm_table[0]);
+  
   if (! nm_table) {
-    EMSG("No nm_table for executable %s", filename);
+    //EMSG("No nm_table for executable %s", filename);
     return hpcrun_dso_make(filename, NULL, NULL, NULL, NULL, 0);
   }
   if (fh.num_entries < 1) {
-    EMSG("fnbounds returns no symbols for file %s, (all intervals poisoned)", filename);
+    //EMSG("fnbounds returns no symbols for file %s, (all intervals poisoned)", filename);
     return hpcrun_dso_make(filename, NULL, NULL, NULL, NULL, 0);
   }
   TMSG(MAP_EXEC, "Relocatable exec");
@@ -326,8 +329,8 @@ fnbounds_ensure_mapped_dso(const char *module_name, void *start, void *end)
       hpcrun_loadmap_map(dso);
     }
     else {
-      EMSG("!! INTERNAL ERROR, not possible to map dso for %s (%p, %p)",
-          module_name, start, end);
+      //EMSG("!! INTERNAL ERROR, not possible to map dso for %s (%p, %p)",
+      //    module_name, start, end);
       isOk = false;
     }
   }
@@ -440,7 +443,7 @@ fnbounds_compute(const char* incoming_filename, void* start, void* end)
   map_size = fh.mmap_size;
 
   if (fh.num_entries < 1) {
-    EMSG("fnbounds returns no symbols for file %s, (all intervals poisoned)", filename);
+    //EMSG("fnbounds returns no symbols for file %s, (all intervals poisoned)", filename);
     return hpcrun_dso_make(filename, NULL, NULL, start, end, 0);
   }
 
@@ -488,7 +491,7 @@ fnbounds_get_loadModule(void *ip)
   // However, the risk is small, and if we're willing to take the
   // risk, then analyzing the new DSO here allows us to sample inside
   // an init constructor.
-  if (!dso && ENABLED(DLOPEN_RISKY) && hpcrun_dlopen_pending() > 0) {
+  if (!dso && ENABLED(DLOPEN_RISKY)) {
     char module_name[PATH_MAX];
     void *mstart, *mend;
 

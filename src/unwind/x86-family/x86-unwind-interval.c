@@ -164,11 +164,13 @@ _dump_ui_str(unwind_interval *u, char *buf, size_t len)
 void
 dump_ui_log(unwind_interval *u)
 {
+  /* 
   char buf[1000];
 
   _dump_ui_str(u, buf, sizeof(buf));
 
   EMSG(buf);
+  */
 }
 
 void

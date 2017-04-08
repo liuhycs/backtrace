@@ -117,7 +117,8 @@ int zero_fcn(void) { return 0; }
 #include <string.h>
 #include <unistd.h>
 
-#if !defined(STAND_ALONE_CLIENT)
+#if 1
+//#if !defined(STAND_ALONE_CLIENT)
 #include <syserv-mesg.h>
 #include "client.h"
 #include "disabled.h"
@@ -348,7 +349,7 @@ launch_server(void)
   }
 
   if (pipe(sendfd) != 0 || pipe(recvfd) != 0) {
-    EMSG("SYSTEM_SERVER ERROR: syserv launch failed: pipe failed");
+    //EMSG("SYSTEM_SERVER ERROR: syserv launch failed: pipe failed");
     return -1;
   }
 
@@ -358,7 +359,7 @@ launch_server(void)
     //
     // fork failed
     //
-    EMSG("SYSTEM_SERVER ERROR: syserv launch failed: fork failed");
+    //EMSG("SYSTEM_SERVER ERROR: syserv launch failed: fork failed");
     return -1;
   }
   else if (pid == 0) {
@@ -423,8 +424,10 @@ hpcrun_syserv_init(void)
   TMSG(SYSTEM_SERVER, "syserv init");
 
   server = getenv("HPCRUN_FNBOUNDS_CMD");
+
+  //fprintf(stderr, "server %s\n", server);
   if (server == NULL) {
-    EMSG("SYSTEM_SERVER ERROR: unable to get HPCRUN_FNBOUNDS_CMD");
+    //EMSG("SYSTEM_SERVER ERROR: unable to get HPCRUN_FNBOUNDS_CMD");
     return -1;
   }
 
@@ -474,7 +477,7 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   void *addr;
 
   if (fname == NULL || fh == NULL) {
-    EMSG("SYSTEM_SERVER ERROR: passed NULL pointer to %s", __func__);
+    //EMSG("SYSTEM_SERVER ERROR: passed NULL pointer to %s", __func__);
     return NULL;
   }
 
@@ -498,7 +501,7 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
     if (write_mesg(SYSERV_QUERY, len) != SUCCESS
 	|| read_mesg(&mesg) != SUCCESS || mesg.type != SYSERV_ACK)
     {
-      EMSG("SYSTEM_SERVER ERROR: unable to restart system server");
+      //EMSG("SYSTEM_SERVER ERROR: unable to restart system server");
       shutdown_server();
       return NULL;
     }
@@ -508,17 +511,17 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   // (OK or ERR).  At this point, errors are pretty much fatal.
   //
   if (write_all(fdout, fname, len) != SUCCESS) {
-    EMSG("SYSTEM_SERVER ERROR: lost contact with server");
+    //EMSG("SYSTEM_SERVER ERROR: lost contact with server");
     shutdown_server();
     return NULL;
   }
   if (read_mesg(&mesg) != SUCCESS) {
-    EMSG("SYSTEM_SERVER ERROR: lost contact with server");
+    //EMSG("SYSTEM_SERVER ERROR: lost contact with server");
     shutdown_server();
     return NULL;
   }
   if (mesg.type != SYSERV_OK) {
-    EMSG("SYSTEM_SERVER ERROR: query failed: %s", fname);
+    //EMSG("SYSTEM_SERVER ERROR: query failed: %s", fname);
     return NULL;
   }
 
@@ -528,16 +531,17 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   size_t num_bytes = mesg.len * sizeof(void *);
   size_t mmap_size = page_align(num_bytes);
   addr = mmap_anon(mmap_size);
+  
   if (addr == MAP_FAILED) {
     // Technically, we could keep the server alive in this case.
     // But we would have to read all the data to stay in sync with
     // the server.
-    EMSG("SYSTEM_SERVER ERROR: mmap failed");
+    //EMSG("SYSTEM_SERVER ERROR: mmap failed");
     shutdown_server();
     return NULL;
   }
   if (read_all(fdin, addr, num_bytes) != SUCCESS) {
-    EMSG("SYSTEM_SERVER ERROR: lost contact with server");
+    //EMSG("SYSTEM_SERVER ERROR: lost contact with server");
     shutdown_server();
     return NULL;
   }
@@ -546,12 +550,12 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   struct syserv_fnbounds_info fnb_info;
   int ret = read_all(fdin, &fnb_info, sizeof(fnb_info));
   if (ret != SUCCESS || fnb_info.magic != FNBOUNDS_MAGIC) {
-    EMSG("SYSTEM_SERVER ERROR: lost contact with server");
+    //EMSG("SYSTEM_SERVER ERROR: lost contact with server");
     shutdown_server();
     return NULL;
   }
   if (fnb_info.status != SYSERV_OK) {
-    EMSG("SYSTEM_SERVER ERROR: query failed: %s", fname);
+    //EMSG("SYSTEM_SERVER ERROR: query failed: %s", fname);
     return NULL;
   }
   fh->num_entries = fnb_info.num_entries;
@@ -559,6 +563,10 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   fh->is_relocatable = fnb_info.is_relocatable;
   fh->mmap_size = mmap_size;
 
+  fprintf(stderr, "addr: %p, [%s]\n
+      symbols: %ld, offset: 0x%lx, reloc: %d\n",
+       addr, (char*)addr, (long) fh->num_entries, (long) fh->reference_offset,
+       (int) fh->is_relocatable);
   TMSG(SYSTEM_SERVER, "addr: %p, symbols: %ld, offset: 0x%lx, reloc: %d",
        addr, (long) fh->num_entries, (long) fh->reference_offset,
        (int) fh->is_relocatable);
@@ -568,13 +576,13 @@ hpcrun_syserv_query(const char *fname, struct fnbounds_file_header *fh)
   // has exceeded its memory limit.  Issue a warning at 60%.
   num_queries++;
   if (!mem_warning && fnb_info.memsize > (6 * mem_limit)/10) {
-    EMSG("SYSTEM_SERVER: warning: memory usage: %ld Meg",
-	 fnb_info.memsize / 1024);
+    //EMSG("SYSTEM_SERVER: warning: memory usage: %ld Meg",
+	 //fnb_info.memsize / 1024);
     mem_warning = 1;
   }
   if (num_queries >= MIN_NUM_QUERIES && fnb_info.memsize > mem_limit) {
-    EMSG("SYSTEM_SERVER: warning: memory usage: %ld Meg, restart server",
-	 fnb_info.memsize / 1024);
+    //EMSG("SYSTEM_SERVER: warning: memory usage: %ld Meg, restart server",
+	 //fnb_info.memsize / 1024);
     shutdown_server();
   }
 

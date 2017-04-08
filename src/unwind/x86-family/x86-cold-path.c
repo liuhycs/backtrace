@@ -134,8 +134,8 @@ hpcrun_is_cold_code(xed_decoded_inst_t *xptr, interval_arg_t *iarg)
 
       unwindr_info_t unwr_info;
       if( !uw_recipe_map_lookup(branch_target, &unwr_info) ) {
-        EMSG("Weird result! jmp @ %p branch_target %p has no function bounds",
-              ins, branch_target);
+        //EMSG("Weird result! jmp @ %p branch_target %p has no function bounds",
+        //      ins, branch_target);
         return false;
       }
 
@@ -213,7 +213,7 @@ confirm_cold_path_call(void *loc, interval_arg_t *iarg)
 		possible_call);
 	return false;
   }
-  EMSG("confirm cold path call shouldn't get here!");
+  //EMSG("confirm cold path call shouldn't get here!");
   return false;
 }
 

@@ -147,7 +147,7 @@ confirm_call_fetch_addr(void *addr, size_t offset, void **the_call)
     default:
       return false;
   }
-  EMSG("MAJOR PROGRAMMING ERROR: impossible fall thru @confirm_call_fetch_addr");
+  //EMSG("MAJOR PROGRAMMING ERROR: impossible fall thru @confirm_call_fetch_addr");
   return false;
 }
 

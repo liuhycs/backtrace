@@ -44,6 +44,7 @@
 //
 // ******************************************************* EndRiceCopyright *
 
+#include <assert.h>
 #include <sys/time.h>
 #include <string.h>
 #include "loadmap.h"
@@ -243,7 +244,7 @@ hpcrun_loadmap_new()
   TMSG(LOADMAP, " --NEW");
   hpcrun_loadmap_t* x = hpcrun_malloc(sizeof(hpcrun_loadmap_t));
   if (x == NULL) {
-    EMSG("New loadmap requested, but allocation failed!!");
+    //EMSG("New loadmap requested, but allocation failed!!");
     return NULL;
   }
 
@@ -386,9 +387,9 @@ hpcrun_loadmap_map(dso_info_t* dso)
       hpcrun_loadmap_unmap(lm);
       lm->dso_info = dso;
     }
-    else {
-      EMSG("hpcrun_loadmap_map(): attempt to both map dso '%s' and place it on the free list!", dso->name);
-    }
+    //else {
+      //EMSG("hpcrun_loadmap_map(): attempt to both map dso '%s' and place it on the free list!", dso->name);
+    //}
     msg = "(reuse)";
   }
   else {

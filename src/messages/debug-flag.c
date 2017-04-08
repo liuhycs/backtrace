@@ -75,7 +75,7 @@
 #include "messages/debug-flag.h"
 #include <utils/tokenize.h>
 
-extern void unlimit_msgs(void);
+//extern void unlimit_msgs(void);
 
 //*****************************************************************************
 // global variables 
@@ -207,7 +207,7 @@ void debug_flag_init()
   debug_flag_process_env(debug_mode_only);
 
   if (debug_mode_only){
-    monitor_real_exit(1);
+    exit(1);
   }
 }
 
@@ -294,7 +294,7 @@ debug_flag_process_string(char *in, int debug_initialization)
   }
 
   for (char *f=start_tok(in); more_tok(); f = next_tok()){
-    unlimit_msgs();
+    //unlimit_msgs();
     if (strcmp(f,"ALL") == 0){
       debug_flag_set_list(&all_list, 1);
       continue;

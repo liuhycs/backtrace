@@ -62,6 +62,8 @@
 #define ETMSG(f,...)   
 #define NMSG(f,...)    
 #define ENMSG(f, ...)  
+#define EMSG
+#define AMSG 
 
 #if 0
 

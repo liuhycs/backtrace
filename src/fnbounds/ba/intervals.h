@@ -44,39 +44,14 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#include <map>
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
-
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
-
-#include <stdbool.h>
-
-
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
-
-#include <srg_backtrace.h>
-
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+class intervals {
+private:
+  std::map<void *, void *> mymap;
+public:
+  void insert(void *start, void *end); 
+  std::pair<void *const, void *> *contains(void * i); 
+  void clear();
+  void dump(); 
+};

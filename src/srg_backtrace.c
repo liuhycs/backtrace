@@ -2,6 +2,8 @@
 #include "srg_backtrace.h"
 #include <setjmp.h>
 
+__thread void* framebottom;
+
 enum _local_int_const {
   BACKTRACE_INIT_SZ     = 32,
   NEW_BACKTRACE_INIT_SZ = 32,
@@ -32,8 +34,9 @@ void thread_data_init(thread_data_t* td) {
 
 }
 
-void backtrace_init(){
-
+void backtrace_init(void* fb){
+  // set frame bottom
+  framebottom = fb;
   hpcrun_initLoadmap();
 
   // must initialize unwind recipe map before initializing fnbounds

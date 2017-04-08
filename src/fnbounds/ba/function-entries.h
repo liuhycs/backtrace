@@ -44,39 +44,26 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#include <string>
+#include <vector>
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+using namespace std;
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+int c_mode(void);
+int server_mode(void);
 
-#include <stdbool.h>
+void function_entries_reinit();
 
+void add_function_entry(void *address, const string *comment, bool isglobal, 
+			int call_count = 0);
+void add_stripped_function_entry(void *function_entry, int call_count = 0);
+bool contains_function_entry(void *address);
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+void add_protected_range(void *start, void *end);
+int  is_possible_fn(void *addr);
+int  inside_protected_range(void *addr);
 
-#include <srg_backtrace.h>
+void entries_in_range(void *start, void *end, vector<void *> &result);
+bool query_function_entry(void *addr);
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+void dump_reachable_functions();

@@ -115,8 +115,8 @@ stack_troll(void **start_sp, uint *ra_pos, validate_addr_fn_t validate_addr, voi
         break;
 
       default:
-        EMSG("UNKNOWN return code from validate_addr in Trolling code %p at sp = %p",
-             *sp, sp);
+        //EMSG("UNKNOWN return code from validate_addr in Trolling code %p at sp = %p",
+         //    *sp, sp);
         break;
     }
     sp++;

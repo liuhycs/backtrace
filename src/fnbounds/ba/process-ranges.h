@@ -44,39 +44,16 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#ifndef process_ranges_hpp
+#define process_ranges_hpp
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+#include "code-ranges.h"
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+void process_range_init();
 
-#include <stdbool.h>
+void process_range(long offset, void *vstart, void *vend,
+		   DiscoverFnTy fn_discovery);
 
+bool range_contains_control_flow(void *vstart, void *vend);
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
-
-#include <srg_backtrace.h>
-
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+#endif // process_ranges_hpp

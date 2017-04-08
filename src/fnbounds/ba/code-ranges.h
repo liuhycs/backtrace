@@ -44,39 +44,28 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#ifndef code_ranges_hpp
+#define code_ranges_hpp
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+#include <stdio.h>
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+enum DiscoverFnTy {
+  DiscoverFnTy_NULL = 0,
+  DiscoverFnTy_Aggressive,
+  DiscoverFnTy_Conservative,
+  DiscoverFnTy_None
+};
 
-#include <stdbool.h>
+void code_ranges_reinit();
 
+bool consider_possible_fn_address(void *addr);
+long offset_for_fn(void *addr);
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+void new_code_range(void *start, void *end, long offset,
+		    DiscoverFnTy discover);
 
-#include <srg_backtrace.h>
+void process_code_ranges();
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
+long num_function_entries(void);
 
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
+#endif // code_ranges_hpp

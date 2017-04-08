@@ -2,8 +2,8 @@
 
 // * BeginRiceCopyright *****************************************************
 //
-// $HeadURL$
-// $Id$
+// $HeadURL: https://outreach.scidac.gov/svn/hpctoolkit/trunk/src/tool/hpcrun/unwind/x86-family/manual-intervals/x86-intel11-f90main.c $
+// $Id: x86-intel11-f90main.c 3543 2011-05-27 22:26:29Z mfagan $
 //
 // --------------------------------------------------------------------------
 // Part of HPCToolkit (hpctoolkit.org)
@@ -44,39 +44,45 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#include <string.h>
+#include "unwind/x86-family/x86-unwind-interval-fixup.h"
+#include "unwind/x86-family/x86-unwind-interval.h"
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+static char pgi_mp_pexit_signature[] = {
+  0x41,  0x5b,                			// pop    %r11
+  0x4c, 0x89, 0x9c, 0x24, 0xb0, 0x00, 0x00, 	// mov    %r11,0xb0(%rsp)
+  0x00, 
+  0x48, 0x83, 0x7c, 0x24, 0x08, 0x01,    	// cmpq   $0x1,0x8(%rsp)
+};
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+static int 
+adjust_pgi_mp_pexit_intervals(char *ins, int len, btuwi_status_t *stat)
+{
+  int siglen = sizeof(pgi_mp_pexit_signature);
 
-#include <stdbool.h>
+  if (len > siglen && strncmp((char *)pgi_mp_pexit_signature, ins, siglen) == 0) {
+    // signature matched 
+    unwind_interval *ui = stat->first;
+
+    // this won't fix all of the intervals, but it will fix the one we care about.
+    while(ui) {
+      if (UWI_RECIPE(ui)->ra_status == RA_SP_RELATIVE){
+    	UWI_RECIPE(ui)->sp_ra_pos = 0xb0;
+    	UWI_RECIPE(ui)->sp_bp_pos = 0;
+      }
+      ui = UWI_NEXT(ui);
+    }
+    return 1;
+  } 
+  return 0;
+}
 
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+static void 
+__attribute__ ((constructor))
+register_unwind_interval_fixup_function(void)
+{
+  add_x86_unwind_interval_fixup_function(adjust_pgi_mp_pexit_intervals);
+}
 
-#include <srg_backtrace.h>
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h

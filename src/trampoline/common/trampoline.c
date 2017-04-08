@@ -85,3 +85,5 @@ hpcrun_trampoline_at_entry(void* addr)
   return (addr == hpcrun_trampoline);
 }
 
+void hpcrun_trampoline(void) { }
+void hpcrun_trampoline_end(void) { }

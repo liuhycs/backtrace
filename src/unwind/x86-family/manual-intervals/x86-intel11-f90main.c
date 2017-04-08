@@ -44,39 +44,49 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#include <string.h>
+#include "unwind/x86-family/x86-unwind-interval-fixup.h"
+#include "unwind/x86-family/x86-unwind-interval.h"
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+static char intel11_f90main_signature[] = { 
+  0x53,                         // push   %rbx
+  0x48, 0x89, 0xe3,             // mov    %rsp,%rbx
+  0x48, 0x83, 0xe4, 0x80,       // and    $0xffffffffffffff80,%rsp
+  0x55,                         // push   %rbp
+  0x55,                         // push   %rbp
+  0x48, 0x8b, 0x6b, 0x08,       // mov    0x8(%rbx),%rbp
+  0x48, 0x89, 0x6c, 0x24, 0x08, // mov    %rbp,0x8(%rsp)
+  0x48,                         // rex64
+};
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+static int 
+adjust_intel11_f90main_intervals(char *ins, int len, btuwi_status_t *stat)
+{
+  int siglen = sizeof(intel11_f90main_signature);
 
-#include <stdbool.h>
+  if (len > siglen && strncmp((char *)intel11_f90main_signature, ins, siglen) == 0) {
+    // signature matched 
+    unwind_interval *ui = stat->first;
+
+    // this won't fix all of the intervals, but it will fix the one we care about.
+    while(ui) {
+      if (UWI_RECIPE(ui)->ra_status == RA_STD_FRAME){
+    	UWI_RECIPE(ui)->bp_ra_pos = 8;
+    	UWI_RECIPE(ui)->bp_bp_pos = 0;
+      }
+      ui = UWI_NEXT(ui);
+    }
+    return 1;
+  } 
+  return 0;
+}
 
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+static void 
+__attribute__ ((constructor))
+register_unwind_interval_fixup_function(void)
+{
+  add_x86_unwind_interval_fixup_function(adjust_intel11_f90main_intervals);
+}
 
-#include <srg_backtrace.h>
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h

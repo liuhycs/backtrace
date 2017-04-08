@@ -2,8 +2,8 @@
 
 // * BeginRiceCopyright *****************************************************
 //
-// $HeadURL$
-// $Id$
+// $HeadURL: https://hpctoolkit.googlecode.com/svn/trunk/src/tool/hpcrun/unwind/x86-family/manual-intervals/x86-intel11-f90main.c $
+// $Id: x86-intel11-f90main.c 4422 2014-02-10 21:24:59Z mwkrentel $
 //
 // --------------------------------------------------------------------------
 // Part of HPCToolkit (hpctoolkit.org)
@@ -44,39 +44,60 @@
 //
 // ******************************************************* EndRiceCopyright *
 
-#ifndef trampoline_h
-#define trampoline_h
+#include <string.h>
+#include "unwind/x86-family/x86-unwind-interval-fixup.h"
+#include "unwind/x86-family/x86-unwind-interval.h"
 
-//******************************************************************************
-// File: trampoline.h
-//
-// Purpose: architecture independent support for counting returns of sampled
-//          frames using trampolines
-//
-// Modification History:
-//   2009/09/15 - created - Mike Fagan and John Mellor-Crummey
-//******************************************************************************
+static char gcc_main64_signature[] = { 
+ 0x4c, 0x8d, 0x54, 0x24, 0x08,  // lea    0x8(%rsp),%r10
+ 0x48, 0x83, 0xe4, 0xe0,        // and    $0xffffffffffffffe0,%rsp
+ 0x41, 0xff, 0x72, 0xf8,        // pushq  -0x8(%r10)
+ 0x55,                          // push   %rbp
+ 0x48, 0x89, 0xe5,              // mov    %rsp,%rbp
+};
 
-// *****************************************************************************
-//    System Includes
-// *****************************************************************************
+static int 
+adjust_gcc_main64_intervals(char *ins, int len, btuwi_status_t *stat)
+{
+  int siglen = sizeof(gcc_main64_signature);
 
-#include <stdbool.h>
+  if (len > siglen && strncmp((char *)gcc_main64_signature, ins, siglen) == 0) {
+    // signature matched 
+    unwind_interval *ui = (unwind_interval *) stat->first;
+
+    // this won't fix all of the intervals, but it will fix the ones 
+    // that we care about.
+    //
+    // The method is as follows:
+    // Ignore (do not correct) intervals before 1st std frame
+    // For 1st STD_FRAME, compute the corrections for this interval and subsequent intervals
+    // For this interval and subsequent interval, apply the corrected offsets
+    //
+
+    for(; UWI_RECIPE(ui)->ra_status != RA_STD_FRAME; ui = UWI_NEXT(ui));
+
+    // this is only correct for 64-bit code
+    for(; ui; ui =  UWI_NEXT(ui)) {
+      if (UWI_RECIPE(ui)->ra_status == RA_SP_RELATIVE) continue;
+      if ((UWI_RECIPE(ui)->ra_status == RA_STD_FRAME) || 
+          (UWI_RECIPE(ui)->ra_status == RA_BP_FRAME)) {  
+         UWI_RECIPE(ui)->ra_status = RA_BP_FRAME;
+         UWI_RECIPE(ui)->bp_ra_pos = 8;
+         UWI_RECIPE(ui)->bp_bp_pos = 0;
+      }
+    }
+
+    return 1;
+  } 
+  return 0;
+}
 
 
-// *****************************************************************************
-//    Local Includes
-// *****************************************************************************
+static void 
+__attribute__ ((constructor))
+register_unwind_interval_fixup_function(void)
+{
+  add_x86_unwind_interval_fixup_function(adjust_gcc_main64_intervals);
+}
 
-#include <srg_backtrace.h>
 
-// *****************************************************************************
-//    Interface Functions
-// *****************************************************************************
-
-extern bool hpcrun_trampoline_interior(void* addr);
-extern bool hpcrun_trampoline_at_entry(void* addr);
-
-extern void hpcrun_trampoline(void);
-extern void hpcrun_trampoline_end(void);
-#endif // trampoline_h
