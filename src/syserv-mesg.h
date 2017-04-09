@@ -45,7 +45,7 @@
 // ******************************************************* EndRiceCopyright *
 
 // This file defines the API for messages over the pipe between the
-// hpcrun client (hpcrun/fnbounds/fnbounds_client.c) and the new
+// hpcrun client (hpcrun/fnbounds/binaryanalysis.c) and the new
 // fnbounds server (server.cpp).
 //
 // Note: none of these structs needs to be platform-independent

@@ -157,21 +157,21 @@ dump_reachable_functions()
       // inferred functions must be at least 16 bytes long
       if (i != function_entries.end()) {
         Function *nextf = (*i).second;
-	if (f->call_count == 0 && 
-	    (((unsigned long) nextf->address) - 
-	     ((unsigned long) f->address)) < 16)  {
-	  long offset = offset_for_fn(f->address);
-	  if (offset == 0) {
+        if (f->call_count == 0 && 
+            (((unsigned long) nextf->address) - 
+             ((unsigned long) f->address)) < 16)  {
+          long offset = offset_for_fn(f->address);
+          if (offset == 0) {
             // if f->address lies within a valid code range, its
             // offset will be non-zero. if offset is zero, the 
             // address cannot be a valid function start.
-	    continue; 
+            continue; 
           }
-	  if (!range_contains_control_flow((char *) f->address + offset, 
-					   ((char *) nextf->address + 
-					    offset)))
-	    continue;
-	}
+          if (!range_contains_control_flow((char *) f->address + offset, 
+                ((char *) nextf->address + 
+                 offset)))
+            continue;
+        }
       }
       sprintf(buffer,"stripped_%p", f->address);
       name = buffer;
@@ -267,6 +267,9 @@ dump_function_entry(void *addr, const char *comment)
 {
   num_entries_total++;
 
+  syserv_add_addr(addr, function_entries.size());
+  
+  /**
   if (server_mode()) {
     syserv_add_addr(addr, function_entries.size());
     return;
@@ -276,12 +279,13 @@ dump_function_entry(void *addr, const char *comment)
     if (num_entries_total > 1) {
       printf(",\n");
     }
-    printf("  0x%" PRIxPTR "  /* %s */", (uintptr_t) addr, comment);
+    printf("  0x%" PRIxPTR " [ %s ]", (uintptr_t) addr, comment);
     return;
   }
 
   // default is text mode
   printf("0x%" PRIxPTR "    %s\n", (uintptr_t) addr, comment);
+  */
 }
 
 

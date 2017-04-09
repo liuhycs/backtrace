@@ -270,7 +270,6 @@ signal_handler(int sig)
   errx(1, "got signal outside sigsetjmp: %d", sig);
 }
 
-
 // Catch segfaults, abort and SIGPIPE.
 static void
 signal_handler_init(void)

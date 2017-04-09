@@ -488,6 +488,9 @@ dump_file_symbols(int dwarf_fd, Symtab *syms, vector<Symbol *> &symvec,
 static void
 dump_header_info(int is_relocatable, uintptr_t ref_offset)
 {
+  syserv_add_header(is_relocatable, ref_offset);
+
+  /*
   if (server_mode()) {
     syserv_add_header(is_relocatable, ref_offset);
     return;
@@ -506,6 +509,7 @@ dump_header_info(int is_relocatable, uintptr_t ref_offset)
   printf("num symbols = %ld, reference offset = 0x%" PRIxPTR ", "
 	 "relocatable = %d\n",
 	 num_function_entries(), ref_offset, is_relocatable);
+  */
 }
 
 

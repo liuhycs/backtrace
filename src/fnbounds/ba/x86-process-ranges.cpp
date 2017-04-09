@@ -53,14 +53,14 @@
 #include <assert.h>
 #include <string>
 
-#include <include/hpctoolkit-config.h>
+#include <config.h>
 
 /******************************************************************************
  * XED include files, and conditionally the amd extended ops (amd-xop)
  *****************************************************************************/
 
 extern "C" {
-#include <include/hpctoolkit-config.h>
+#include <config.h>
 #include <xed-interface.h>
 #if defined(ENABLE_XOP) && defined (HOST_CPU_x86_64)
 #include "amd-xop.h"
@@ -105,7 +105,7 @@ xed_iclass(char* ins)
 #include "function-entries.h"
 #include "process-ranges.h"
 
-#include <include/hpctoolkit-config.h>
+#include <config.h>
 #include <lib/isa-lean/x86/instruction-set.h>
 
 
