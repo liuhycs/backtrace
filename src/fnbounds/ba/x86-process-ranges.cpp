@@ -106,7 +106,7 @@ xed_iclass(char* ins)
 #include "process-ranges.h"
 
 #include <config.h>
-#include <lib/isa-lean/x86/instruction-set.h>
+#include <isa-x86-instruction-set.h>
 
 
 /******************************************************************************

@@ -77,15 +77,11 @@ struct syserv_mesg {
 };
 
 struct syserv_fnbounds_info {
-  // internal fields for the client
-  int32_t   magic;
-  int32_t   status;
-  long      memsize;
-
   // fields for the fnbounds file header
-  uint64_t  num_entries;
-  uint64_t  reference_offset;
-  int       is_relocatable;
+  uint64_t num_entries;
+  uint64_t reference_offset;
+  int is_relocatable;
+  size_t mmapsize;
 };
 
 #endif  // _SYSERV_MESG_H_

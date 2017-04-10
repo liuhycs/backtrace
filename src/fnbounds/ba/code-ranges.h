@@ -49,12 +49,12 @@
 
 #include <stdio.h>
 
-enum DiscoverFnTy {
+typedef enum {
   DiscoverFnTy_NULL = 0,
   DiscoverFnTy_Aggressive,
   DiscoverFnTy_Conservative,
   DiscoverFnTy_None
-};
+} DiscoverFnTy;
 
 void code_ranges_reinit();
 

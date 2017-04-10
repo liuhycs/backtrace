@@ -87,8 +87,8 @@
 #include "fnbounds_interface.h"
 #include "fnbounds_file_header.h"
 #include "os/linux/dylib.h"
+#include "fnbounds/ba/binaryanalysis.h"
 
-#include <disabled.h>
 #include <loadmap.h>
 #include <srg_backtrace.h>
 
@@ -161,9 +161,8 @@ fnbounds_map_executable();
   int 
 fnbounds_init()
 {
-  if (hpcrun_get_disabled()) return 0;
-  
-  hpcrun_syserv_init();
+  //hpcrun_syserv_init();
+
   fnbounds_map_executable();
   fnbounds_map_open_dsos();
 
@@ -275,7 +274,7 @@ fnbounds_dso_exec(void)
   TMSG(MAP_EXEC, "Entry");
   realpath("/proc/self/exe", filename);
   
-  void** nm_table = (void**) hpcrun_syserv_query(filename, &fh);
+  void** nm_table = (void**) ba_fnbounds(&fh, filename);
   fprintf(stderr, "nmtable %p\n", nm_table);
   fprintf(stderr, "nmtable %p\n", nm_table[0]);
   
@@ -379,9 +378,7 @@ fnbounds_unmap_closed_dsos()
   void 
 fnbounds_fini()
 {
-  if (hpcrun_get_disabled()) return;
-
-  hpcrun_syserv_fini();
+  //hpcrun_syserv_fini();
 }
 
 
@@ -436,7 +433,7 @@ fnbounds_compute(const char* incoming_filename, void* start, void* end)
 
   realpath(incoming_filename, filename);
 
-  nm_table = (void**) hpcrun_syserv_query(filename, &fh);
+  nm_table = (void**) ba_fnbounds(&fh, filename);
   if (nm_table == NULL) {
     return hpcrun_dso_make(filename, NULL, NULL, start, end, 0);
   }

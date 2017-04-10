@@ -56,7 +56,7 @@
 #include "function-entries.h"
 #include "process-ranges.h"
 #include "intervals.h"
-#include "server.h"
+#include "binaryanalysis.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

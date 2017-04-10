@@ -1,6 +1,5 @@
 SRCS = ./fnbounds/fnbounds_dynamic.c \
 			 ./fnbounds/fnbounds_common.c \
-			 ./fnbounds/fnbounds_client.c \
 			 ./utils/urand.c \
 			 ./utils/cskiplist.c \
 			 ./utils/usec_time.c \
@@ -15,7 +14,6 @@ SRCS = ./fnbounds/fnbounds_dynamic.c \
 			 ./ip-normalized.c \
 			 ./messages/debug-flag.c \
 			 ./trampoline/common/trampoline.c \
-			 ./disabled.c \
 			 ./unwind/common/backtrace-lite.c \
 			 ./unwind/common/uw_recipe_map.c \
 			 ./unwind/common/interval_t.c \
@@ -49,7 +47,6 @@ SRCS = ./fnbounds/fnbounds_dynamic.c \
 	./unwind/common/default_validation_summary.c \
 
 INCS =  ./frame.h \
-				./fnbounds/client.h \
 				./fnbounds/fnbounds_interface.h \
 				./fnbounds/fnbounds_file_header.h \
 				./fnbounds/fnbounds_table_interface.h \
@@ -73,7 +70,6 @@ INCS =  ./frame.h \
 				./messages/debug-flag.h \
 				./loadmap.h \
 				./trampoline/common/trampoline.h \
-				./disabled.h \
 				./unwind/common/backtrace_info.h \
 				./unwind/common/interval_t.h \
 				./unwind/common/binarytree_uwi.h \
@@ -137,24 +133,44 @@ DEPS = $(INCS)
 CXX = clang
 #-D_GNU_SOURCE 
 
-XED2_LIBS = -L/home/hongyuliu/workspace/backtrace/libs/xed2/lib -lxed
+SYMTAB_LIBS_ROOT = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/symtabAPI/lib
+SYMTAB_LIBS = -L$(SYMTAB_LIBS_ROOT) -lsymtabAPI -lcommon -ldynDwarf -ldynElf  
+SYMTAB_INC = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/symtabAPI/include 
+
+DWARF_LIBS_ROOT = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/libdwarf/lib
+DWARF_LIBS = -L$(DWARF_LIBS_ROOT) -ldwarf 
+DWAEF_INC = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/libdwarf/include
+
+ELF_LIBS_ROOT = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/libelf/lib
+ELF_LIBS = -L$(ELF_LIBS_ROOT) -lelf
+ELF_INC = /home/hongyuliu/workspace/hpctoolkitbin/hpctoolkit-externals-dist/libelf/include
+
+XED2_LIBS_ROOT = /home/hongyuliu/workspace/backtrace/libs/xed2/lib
+XED2_LIBS = -L$(XED2_LIBS_ROOT) -lxed
 XED2_INC = /home/hongyuliu/workspace/backtrace/libs/xed2/include
 
 # Framework
-CFLAGS += -O0 -Wall -g -fPIC -fno-omit-frame-pointer -D_GNU_SOURCE -D__GNUC_ATOMICS
+CFLAGS += -O2 -Wall -g -fPIC -fno-omit-frame-pointer -D_GNU_SOURCE -D__GNUC_ATOMICS
 
-INCLUDE_DIRS = -I. -I$(XED2_INC) -Wl,-rpath,/home/hongyuliu/workspace/backtrace/libs/xed2/lib
-LIBS = $(XED2_LIBS) -ldl
+INCLUDE_DIRS = -I. -I$(SYMTAB_INC) -I$(DWAEF_INC) -I$(ELF_INC) -I$(XED2_INC) -Wl,-rpath,$(SYMTAB_LIBS_ROOT):$(DWARF_LIBS_ROOT):$(ELF_LIBS_ROOT):$(XED2_LIBS_ROOT)
+LIBS = $(SYMTAB_LIBS) $(DWARF_LIBS) $(ELF_LIBS) $(XED2_LIBS) -ldl
+
+FNBOUNDS = function-entries.o x86-process-ranges.o binaryanalysis.o intervals.o code-ranges.o
+FNBOUNDS_OBJS = $(addprefix fnbounds/ba/, $(FNBOUNDS))
 
 TARGETS = libbacktrace.so
 
 all: $(TARGETS)
 
+FNBOUNDS_MK:	
+	cd fnbounds/ba && make -f Makefile 
+	
 #gcc -fPIC -std=c99 -c pthread_create.c
-$(TARGETS): $(DEPS)
-	$(CXX) $(CFLAGS) $(INCLUDE_DIRS) -shared -fPIC $(SRCS) -o $(TARGETS) $(LIBS)
+$(TARGETS): $(DEPS) FNBOUNDS_MK
+#	$(CXX) $(CFLAGS) $(INCLUDE_DIRS) $(SRCS) -c -o backtrace.o
+	$(CXX) $(CFLAGS) $(INCLUDE_DIRS) -shared $(SRCS) $(FNBOUNDS_OBJS) -o $(TARGETS) $(LIBS)
 
 clean:
 	rm -f $(TARGETS)
-
+	cd fnbounds/ba && make -f Makefile clean 
 
