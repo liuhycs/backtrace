@@ -96,13 +96,13 @@ hpcrun_bt_init(backtrace_t* bt, size_t size)
 
   void
 hpcrun_dump_bt(backtrace_t* bt)
-{
-  /* 
+{ 
   for(frame_t* _f = bt->beg; _f < bt->beg + bt->len; _f++) {
-    TMSG(BT, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %p ", _f->ip_norm.lm_id,
+    fprintf(stderr, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %lx ", _f->ip_norm.lm_id,
         _f->ip_norm.lm_ip);
+    //TMSG(BT, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %p ", _f->ip_norm.lm_id,
+    //    _f->ip_norm.lm_ip);
   }
-  */
 }
 
 //

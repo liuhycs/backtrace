@@ -275,8 +275,8 @@ fnbounds_dso_exec(void)
   realpath("/proc/self/exe", filename);
   
   void** nm_table = (void**) ba_fnbounds(&fh, filename);
-  fprintf(stderr, "nmtable %p\n", nm_table);
-  fprintf(stderr, "nmtable %p\n", nm_table[0]);
+//  fprintf(stderr, "nmtable %p\n", nm_table);
+//  fprintf(stderr, "nmtable %p\n", nm_table[0]);
   
   if (! nm_table) {
     //EMSG("No nm_table for executable %s", filename);

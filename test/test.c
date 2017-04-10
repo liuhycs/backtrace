@@ -3,13 +3,39 @@
 #include <ucontext.h>
 #include "srg_backtrace.h"
 
+#define __USE_GNU
+#include <dlfcn.h>
+#include <execinfo.h>
+
 void c(){
+  
+  void* array[256];
+  int frames;
+  frames = backtrace(array, 256);
+  int i;
+  for(i = 0; i < frames; i++) {
+    fprintf(stderr, "%p ", array[i]);
+  }
+  fprintf(stderr, "\n");
+
   thread_data_t td;
   thread_data_init(&td);
   backtrace_info_t bt;
   ucontext_t ut;
   getcontext(&ut);
-  hpcrun_generate_backtrace(&td, &bt, &ut);
+  hpcrun_generate_backtrace(&td, &bt, &ut);  
+
+  frame_t* _it = td.btbuf_beg;
+  frame_t* _end = td.btbuf_end;
+
+  while(_it != _end){
+    fprintf(stderr, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %lx \n", _it->ip_norm.lm_id, _it->ip_norm.lm_ip);
+    Dl_info info;
+    if(dladdr((void*)_it->ip_norm.lm_ip, &info))
+      fprintf(stderr, "dli_fname %s, dli_fbase %p, dli_sname %s\n", info.dli_fname, info.dli_fbase, info.dli_sname);
+    _it++;
+  }
+
   char* ptr = malloc(10);
   *ptr = 'c';
   free(ptr);
@@ -35,4 +61,5 @@ int main() {
   char* ptr = malloc(10);
   *ptr = 'm';
   free(ptr);
+  while(1);
 }
