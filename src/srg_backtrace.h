@@ -12,6 +12,10 @@
 #include "fnbounds/fnbounds_interface.h"
 #include "frame.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   sigjmp_buf jb;
 } sigjmp_buf_t;
@@ -26,5 +30,9 @@ void thread_data_init(thread_data_t* td);
 frame_t* hpcrun_expand_btbuf(thread_data_t* td);
 void hpcrun_ensure_btbuf_avail(thread_data_t* td);
 void hpcrun_cached_bt_adjust_size(thread_data_t *td, size_t n);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif
