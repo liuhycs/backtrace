@@ -125,7 +125,7 @@ static void
 update_cursor_with_troll(hpcrun_unw_cursor_t* cursor, int offset);
 
 static fence_enum_t
-hpcrun_check_fence(void* ip);
+hpcrun_check_fence(void* sp);
 
 static void 
 simulate_segv(void);
@@ -280,15 +280,13 @@ hpcrun_unw_init_cursor(hpcrun_unw_cursor_t* cursor, void* context)
       cursor->pc_unnorm, cursor->ra_loc, cursor->sp, cursor->bp);
 
   cursor->flags = 0; // trolling_used
-  //bool found = uw_recipe_map_lookup(cursor->pc_unnorm, &(cursor->unwr_info));
-  uw_recipe_map_lookup(cursor->pc_unnorm, &(cursor->unwr_info));
+  bool found = uw_recipe_map_lookup(cursor->pc_unnorm, &(cursor->unwr_info));
+  //uw_recipe_map_lookup(cursor->pc_unnorm, &(cursor->unwr_info));
 
-  /* 
-     if (!found) {
-     EMSG("unw_init: cursor could NOT build an interval for initial pc = %p",
-     cursor->pc_unnorm);
-     }
-     */
+  if (!found) {
+    TMSG(UNW, "unw_init: cursor could NOT build an interval for initial pc = %p",
+        cursor->pc_unnorm);
+  }
 
   compute_normalized_ips(cursor);
 
@@ -323,7 +321,8 @@ fence_stop(fence_enum_t fence)
 hpcrun_unw_step_real(hpcrun_unw_cursor_t* cursor)
 {
 
-  cursor->fence = hpcrun_check_fence(cursor->pc_unnorm);
+  cursor->fence = hpcrun_check_fence(cursor->sp);
+  //cursor->fence = hpcrun_check_fence(cursor->pc_unnorm);
 
   //-----------------------------------------------------------
   // check if we have reached the end of our unwind, which is
@@ -616,7 +615,7 @@ unw_step_bp(hpcrun_unw_cursor_t* cursor)
     if (!((void *)bp < framebottom)) {
       TMSG(UNW,"  step_bp: STEP_ERROR, unwind attempted, but incoming bp(%p) was not"
           " between sp (%p) and monitor stack bottom (%p)", 
-          bp, sp, monitor_stack_bottom());
+          bp, sp, framebottom);
       return STEP_ERROR;
     }
   }
@@ -845,10 +844,10 @@ update_cursor_with_troll(hpcrun_unw_cursor_t* cursor, int offset)
 }
 
   static fence_enum_t
-hpcrun_check_fence(void* ip)
+hpcrun_check_fence(void* sp)
 {
   fence_enum_t rv = FENCE_NONE;
-  if(ip <= framebottom)
+  if(sp > framebottom)
     rv = FENCE_THREAD;
   /* 
      if (monitor_unwind_process_bottom_frame(ip))

@@ -133,7 +133,7 @@ confirm_call_fetch_addr(void *addr, size_t offset, void **the_call)
   }
   xed_decoded_inst_t *xptr = &xed.xedd;
   if ( xed_decoded_inst_get_length(xptr) != offset ){
-    TMSG(VALIDATE_UNW,"instruction @ offset %d from %p does not have length corresponding to the offset",
+    TMSG(VALIDATE_UNW,"instruction @ offset %zu from %p does not have length corresponding to the offset",
          offset, addr);
     return false;
   }

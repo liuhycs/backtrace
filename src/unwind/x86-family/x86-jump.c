@@ -85,7 +85,7 @@ process_unconditional_branch(xed_decoded_inst_t *xptr, bool irdebug,
   }
   else if ((possible >= iarg->end) || ((uintptr_t)possible < UWI_START_ADDR(iarg->first))) {
     TMSG(TAIL_CALL,"unconditional branch to address %p outside of current routine (%p to %p)",
-         possible, UWI_START_ADDR(iarg->first), iarg->end);
+         possible, (void *)UWI_START_ADDR(iarg->first), (void *)iarg->end);
     UWI_RECIPE(next)->has_tail_calls = true;
   }
 
@@ -111,7 +111,7 @@ process_conditional_branch(xed_decoded_inst_t *xptr,
   }
   else if ((possible > iarg->end) || ((uintptr_t)possible < UWI_START_ADDR(iarg->first))) {
     TMSG(TAIL_CALL,"unconditional branch to address %p outside of current routine (%p to %p)",
-         possible, UWI_START_ADDR(iarg->first), iarg->end);
+         possible, (void *)UWI_START_ADDR(iarg->first), (void *)iarg->end);
     UWI_RECIPE(iarg->current)->has_tail_calls = true;
   }
 

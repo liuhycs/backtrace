@@ -9,6 +9,7 @@
 
 void c(){
   
+  fprintf(stderr, "==============backtrace=================>\n");
   void* array[256];
   int frames;
   frames = backtrace(array, 256);
@@ -16,7 +17,7 @@ void c(){
   for(i = 0; i < frames; i++) {
     fprintf(stderr, "%p ", array[i]);
   }
-  fprintf(stderr, "\n");
+  fprintf(stderr, "\n==============backtrace end=================>\n");
 
   thread_data_t td;
   thread_data_init(&td);
@@ -26,9 +27,9 @@ void c(){
   hpcrun_generate_backtrace(&td, &bt, &ut);  
 
   frame_t* _it = td.btbuf_beg;
-  frame_t* _end = td.btbuf_end;
+  frame_t* _cur = td.btbuf_cur;
 
-  while(_it != _end){
+  while(_it != _cur){
     fprintf(stderr, "ip_norm.lm_id = %d, and ip_norm.lm_ip = %lx \n", _it->ip_norm.lm_id, _it->ip_norm.lm_ip);
     Dl_info info;
     if(dladdr((void*)_it->ip_norm.lm_ip, &info))
@@ -61,5 +62,5 @@ int main() {
   char* ptr = malloc(10);
   *ptr = 'm';
   free(ptr);
-  while(1);
+  //while(1);
 }

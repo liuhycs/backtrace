@@ -310,7 +310,7 @@ hpcrun_loadmap_findByName(const char* name)
   TMSG(LOADMAP, "find by name: %s", name);
   for (load_module_t* x = s_loadmap_ptr->lm_head; (x); x = x->next) {
     if (strcmp(x->name, name) == 0) {
-      TMSG(LOADMAP, "       --->FOUND", x->name);
+      TMSG(LOADMAP, "       --->FOUND: %s", x->name);
       return x;
     }
   }

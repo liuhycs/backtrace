@@ -55,15 +55,28 @@
 
 #include <messages/debug-flag.h>
 
-#define STDERR_MSG(...)
-#define EEMSG(...)      
-#define PMSG(f,...)    
-#define TMSG(f,...)    
-#define ETMSG(f,...)   
-#define NMSG(f,...)    
-#define ENMSG(f, ...)  
-#define EMSG
-#define AMSG 
+#if 1
+//#define STDERR_MSG(...)
+#define EEMSG(...)
+#define PMSG(f,...)
+#define TMSG(f,...)
+//#define ETMSG(f,...)
+//#define NMSG(f,...)
+//#define ENMSG(f, ...)
+//#define EMSG
+//#define AMSG 
+#else
+//#define STDERR_MSG(...)
+#define EEMSG(...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")    
+#define PMSG(f,...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")  
+#define TMSG(f,...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n") 
+//#define ETMSG(f,...)
+//#define NMSG(f,...)
+//#define ENMSG(f, ...)
+//#define EMSG
+//#define AMSG 
+#endif
+
 
 #if 0
 

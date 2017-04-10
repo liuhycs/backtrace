@@ -150,7 +150,7 @@ XED2_LIBS = -L$(XED2_LIBS_ROOT) -lxed
 XED2_INC = /home/hongyuliu/workspace/backtrace/libs/xed2/include
 
 # Framework
-CFLAGS += -O2 -Wall -g -fPIC -fno-omit-frame-pointer -D_GNU_SOURCE -D__GNUC_ATOMICS
+CFLAGS += -O0 -Wall -g -fPIC -fno-omit-frame-pointer -D_GNU_SOURCE -D__GNUC_ATOMICS
 
 INCLUDE_DIRS = -I. -I$(SYMTAB_INC) -I$(DWAEF_INC) -I$(ELF_INC) -I$(XED2_INC) -Wl,-rpath,$(SYMTAB_LIBS_ROOT):$(DWARF_LIBS_ROOT):$(ELF_LIBS_ROOT):$(XED2_LIBS_ROOT)
 LIBS = $(SYMTAB_LIBS) $(DWARF_LIBS) $(ELF_LIBS) $(XED2_LIBS) -ldl
